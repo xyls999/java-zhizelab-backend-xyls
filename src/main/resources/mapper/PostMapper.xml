@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.mapper.PostMapper">
+
+    <select id="selectPublicPage" resultType="map">
+        select
+            p.id,
+            p.user_id as userId,
+            u.username,
+            u.nick_name as nickName,
+            p.text_content as textContent,
+            p.image_url as imageUrl,
+            p.code_language as codeLanguage,
+            p.code_content as codeContent,
+            p.like_count as likeCount,
+            p.comment_count as commentCount,
+            p.create_time as createTime,
+            p.update_time as updateTime
+        from social_post p
+        left join news_user u on p.user_id = u.uid
+        where p.is_deleted = 0
+        order by p.create_time desc
+    </select>
+
+    <select id="selectMyPage" resultType="map">
+        select
+            p.id,
+            p.user_id as userId,
+            u.username,
+            u.nick_name as nickName,
+            p.text_content as textContent,
+            p.image_url as imageUrl,
+            p.code_language as codeLanguage,
+            p.code_content as codeContent,
+            p.like_count as likeCount,
+            p.comment_count as commentCount,
+            p.create_time as createTime,
+            p.update_time as updateTime
+        from social_post p
+        left join news_user u on p.user_id = u.uid
+        where p.is_deleted = 0
+          and p.user_id = #{userId}
+        order by p.create_time desc
+    </select>
+
+    <select id="selectDetailMap" resultType="map">
+        select
+            p.id,
+            p.user_id as userId,
+            u.username,
+            u.nick_name as nickName,
+            p.text_content as textContent,
+            p.image_url as imageUrl,
+            p.code_language as codeLanguage,
+            p.code_content as codeContent,
+            p.like_count as likeCount,
+            p.comment_count as commentCount,
+            p.create_time as createTime,
+            p.update_time as updateTime
+        from social_post p
+        left join news_user u on p.user_id = u.uid
+        where p.id = #{postId}
+          and p.is_deleted = 0
+    </select>
+
+</mapper>

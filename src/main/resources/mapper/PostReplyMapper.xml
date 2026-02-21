@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.atguigu.mapper.PostReplyMapper">
+
+    <select id="selectReplyList" resultType="map">
+        select
+            r.id,
+            r.post_id as postId,
+            r.user_id as userId,
+            u.username,
+            u.nick_name as nickName,
+            r.content,
+            r.create_time as createTime
+        from social_post_reply r
+        left join news_user u on r.user_id = u.uid
+        where r.post_id = #{postId}
+          and r.is_deleted = 0
+        order by r.create_time asc
+    </select>
+
+</mapper>
