@@ -32,15 +32,15 @@ public class UserController {
         return userService.getUserInfo(token);
     }
 
-    // 3) 注册用户名检查：/user/checkUserName（param）
-    @PostMapping("checkUserName")
-    public Result checkUserName(@RequestParam String username) {
+    // 3) 用户管理内用户名检查（需登录）：/user/manage/checkUserName（param）
+    @PostMapping("manage/checkUserName")
+    public Result manageCheckUserName(@RequestParam String username) {
         return userService.checkUserName(username);
     }
 
-    // 4) 注册：/user/regist
-    @PostMapping("regist")
-    public Result regist(@RequestBody User user) {
+    // 4) 用户管理内新增用户（需登录）：/user/manage/register
+    @PostMapping("manage/register")
+    public Result manageRegister(@RequestBody User user) {
         return userService.regist(user);
     }
 
@@ -51,5 +51,31 @@ public class UserController {
             return Result.build(null, ResultCodeEnum.NOTLOGIN);
         }
         return Result.ok(null);
+    }
+
+    // 6) 用户管理分页：/user/manage/page
+    @GetMapping("manage/page")
+    public Result managePage(@RequestParam(defaultValue = "1") Integer pageNum,
+                             @RequestParam(defaultValue = "10") Integer pageSize,
+                             @RequestParam(required = false) String keyword) {
+        return userService.managePage(pageNum, pageSize, keyword);
+    }
+
+    // 7) 用户管理详情：/user/manage/{uid}
+    @GetMapping("manage/{uid}")
+    public Result manageDetail(@PathVariable Integer uid) {
+        return userService.manageDetail(uid);
+    }
+
+    // 8) 用户管理更新：/user/manage/{uid}
+    @PutMapping("manage/{uid}")
+    public Result manageUpdate(@PathVariable Integer uid, @RequestBody User user) {
+        return userService.manageUpdate(uid, user);
+    }
+
+    // 9) 用户管理删除：/user/manage/{uid}
+    @DeleteMapping("manage/{uid}")
+    public Result manageDelete(@PathVariable Integer uid) {
+        return userService.manageDelete(uid);
     }
 }

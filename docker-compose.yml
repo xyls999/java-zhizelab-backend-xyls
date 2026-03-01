@@ -40,10 +40,6 @@ services:
       JWT_TOKEN_EXPIRATION: ${JWT_TOKEN_EXPIRATION:-120}
       JWT_TOKEN_SIGN_KEY: ${JWT_TOKEN_SIGN_KEY:-change_me_jwt_key}
       APP_UPLOAD_DIR: /app/uploads
-      LLM_BASE_URL: ${LLM_BASE_URL:-}
-      LLM_API_KEY: ${LLM_API_KEY:-}
-      LLM_MODEL: ${LLM_MODEL:-gpt-4o-mini}
-      LLM_TEMPERATURE: ${LLM_TEMPERATURE:-0.7}
     ports:
       - "8080:8080"
     volumes:

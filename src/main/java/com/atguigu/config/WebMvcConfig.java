@@ -28,8 +28,7 @@ public class WebMvcConfig implements WebMvcConfigurer {
                         "/post/my",
                         "/post/*/like",
                         "/post/*/unlike",
-                        "/post/*/reply",
-                        "/llm/**"
+                        "/post/*/reply"
                 );
     }
 

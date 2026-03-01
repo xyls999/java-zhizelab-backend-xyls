@@ -44,10 +44,6 @@ MYSQL_ROOT_PASSWORD=请改成强密码
 MYSQL_DB=sm_db
 JWT_TOKEN_SIGN_KEY=请改成JWT密钥
 JWT_TOKEN_EXPIRATION=120
-LLM_BASE_URL=https://api.openai.com/v1/chat/completions
-LLM_API_KEY=你的大模型Key
-LLM_MODEL=gpt-4o-mini
-LLM_TEMPERATURE=0.7
 ```
 
 ### 4.3 启动容器

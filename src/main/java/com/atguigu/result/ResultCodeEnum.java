@@ -8,9 +8,7 @@ public enum ResultCodeEnum {
     USERNAME_USED(505, "用户名占用"),
     PARAM_ERROR(506, "参数错误"),
     OPERATE_FAIL(507, "操作失败"),
-    DATA_NOT_FOUND(508, "数据不存在"),
-    LLM_NOT_CONFIGURED(509, "大模型配置缺失"),
-    LLM_ERROR(510, "大模型调用失败");
+    DATA_NOT_FOUND(508, "数据不存在");
 
     private final Integer code;
     private final String message;

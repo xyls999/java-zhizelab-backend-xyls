@@ -10,6 +10,12 @@ spring:
     password: ${MYSQL_PASSWORD:root}
     driver-class-name: com.mysql.cj.jdbc.Driver
     type: com.alibaba.druid.pool.DruidDataSource
+  sql:
+    init:
+      mode: always
+      schema-locations:
+        - classpath:sql/user_schema.sql
+        - classpath:sql/social_schema.sql
 
 jwt:
   token:
@@ -18,9 +24,3 @@ jwt:
 
 app:
   upload-dir: ${APP_UPLOAD_DIR:/app/uploads}
-
-llm:
-  base-url: ${LLM_BASE_URL:}
-  api-key: ${LLM_API_KEY:}
-  model: ${LLM_MODEL:gpt-4o-mini}
-  temperature: ${LLM_TEMPERATURE:0.7}

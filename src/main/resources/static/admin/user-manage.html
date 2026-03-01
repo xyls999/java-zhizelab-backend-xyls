@@ -1,0 +1,638 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>用户管理台</title>
+    <style>
+        :root {
+            --bg-start: #10253a;
+            --bg-end: #1f3f61;
+            --panel: rgba(255, 255, 255, 0.95);
+            --line: #d4dde8;
+            --text: #0f2a43;
+            --muted: #6c8093;
+            --primary: #1464a8;
+            --primary-hover: #0f4f86;
+            --accent: #b16e00;
+            --danger: #d33f49;
+            --ok: #0e9f6e;
+            --radius: 14px;
+            --shadow: 0 14px 34px rgba(6, 23, 42, 0.2);
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            color: var(--text);
+            font-family: "HarmonyOS Sans SC", "PingFang SC", "Microsoft YaHei", sans-serif;
+            background: radial-gradient(circle at 12% 15%, rgba(245, 165, 36, 0.2), transparent 30%),
+            radial-gradient(circle at 90% 80%, rgba(20, 100, 168, 0.35), transparent 32%),
+            linear-gradient(140deg, var(--bg-start), var(--bg-end));
+            padding: 28px 14px 36px;
+        }
+
+        .page {
+            max-width: 1180px;
+            margin: 0 auto;
+            display: grid;
+            gap: 16px;
+            animation: fade-up 360ms ease-out;
+        }
+
+        .panel {
+            background: var(--panel);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+            border: 1px solid rgba(255, 255, 255, 0.6);
+            padding: 18px;
+        }
+
+        .title-row {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 14px;
+            flex-wrap: wrap;
+        }
+
+        .title {
+            margin: 0;
+            font-size: 28px;
+            letter-spacing: 0.8px;
+        }
+
+        .subtitle {
+            margin: 6px 0 0;
+            color: var(--muted);
+            font-size: 14px;
+        }
+
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 16px;
+        }
+
+        .form-row {
+            display: grid;
+            gap: 10px;
+        }
+
+        .line-row {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        label {
+            font-size: 13px;
+            color: var(--muted);
+            margin-bottom: 2px;
+        }
+
+        input {
+            width: 100%;
+            border: 1px solid var(--line);
+            border-radius: 10px;
+            padding: 10px 12px;
+            outline: none;
+            transition: border-color 160ms ease;
+            font-size: 14px;
+        }
+
+        input:focus {
+            border-color: var(--primary);
+        }
+
+        button {
+            border: none;
+            border-radius: 10px;
+            padding: 10px 14px;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 120ms ease, opacity 120ms ease, background 160ms ease;
+            background: var(--primary);
+            color: #fff;
+        }
+
+        button:hover {
+            background: var(--primary-hover);
+            transform: translateY(-1px);
+        }
+
+        button:disabled {
+            opacity: 0.55;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #2c3e50;
+        }
+
+        .btn-accent {
+            background: var(--accent);
+        }
+
+        .btn-danger {
+            background: var(--danger);
+        }
+
+        .btn-link {
+            background: transparent;
+            color: var(--primary);
+            padding: 0;
+            border-radius: 0;
+        }
+
+        .status {
+            font-size: 13px;
+            min-height: 20px;
+            color: var(--muted);
+        }
+
+        .status.ok {
+            color: var(--ok);
+        }
+
+        .status.err {
+            color: var(--danger);
+        }
+
+        .table-wrap {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            min-width: 660px;
+        }
+
+        th, td {
+            padding: 10px;
+            border-bottom: 1px solid var(--line);
+            text-align: left;
+            font-size: 14px;
+            vertical-align: top;
+        }
+
+        th {
+            color: var(--muted);
+            font-weight: 600;
+        }
+
+        .actions {
+            display: flex;
+            gap: 8px;
+        }
+
+        .pager {
+            margin-top: 12px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .dialog-body {
+            min-width: min(94vw, 420px);
+            border: none;
+            border-radius: 14px;
+            padding: 0;
+        }
+
+        .dialog-inner {
+            padding: 18px;
+            display: grid;
+            gap: 10px;
+        }
+
+        .dialog-title {
+            margin: 0 0 2px;
+            font-size: 20px;
+        }
+
+        .dialog-actions {
+            display: flex;
+            justify-content: flex-end;
+            gap: 8px;
+            margin-top: 8px;
+        }
+
+        @keyframes fade-up {
+            from {
+                opacity: 0;
+                transform: translateY(8px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        @media (max-width: 900px) {
+            .grid-2 {
+                grid-template-columns: 1fr;
+            }
+
+            .title {
+                font-size: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <section class="panel">
+        <div class="title-row">
+            <div>
+                <h1 class="title">用户管理台</h1>
+                <p class="subtitle">纯管理页面：新增用户（注册）和用户管理均可直接执行，不需要 token。</p>
+            </div>
+            <div id="globalStatus" class="status">页面已就绪</div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="form-row">
+            <label for="baseUrlInput">后端地址（可选）</label>
+            <div class="line-row">
+                <input id="baseUrlInput" placeholder="默认当前域名，如 http://127.0.0.1:8080">
+                <button id="reloadBtn" type="button" class="btn-secondary">重新加载用户</button>
+            </div>
+            <div class="status">跨域场景可填写完整地址，留空使用当前服务地址。</div>
+        </div>
+    </section>
+
+    <section class="panel grid-2">
+        <div class="form-row">
+            <h3 style="margin:0;">新增用户（注册）</h3>
+            <label for="regUsername">用户名</label>
+            <input id="regUsername" placeholder="如：test1001">
+            <label for="regPassword">密码</label>
+            <input id="regPassword" type="password" placeholder="至少输入 1 个字符">
+            <label for="regNickname">昵称（可选）</label>
+            <input id="regNickname" placeholder="留空默认用户名">
+            <div class="line-row">
+                <button id="checkNameBtn" type="button" class="btn-accent">检查用户名</button>
+                <button id="registerBtn" type="button">新增用户</button>
+            </div>
+            <div id="regStatus" class="status"></div>
+        </div>
+
+        <div class="form-row">
+            <h3 style="margin:0;">查询用户</h3>
+            <label for="keywordInput">关键词</label>
+            <div class="line-row">
+                <input id="keywordInput" placeholder="按 username / nickName 模糊搜索">
+                <button id="searchBtn" type="button">查询</button>
+                <button id="resetBtn" type="button" class="btn-secondary">重置</button>
+            </div>
+            <label for="pageSizeInput">每页数量</label>
+            <input id="pageSizeInput" type="number" min="1" max="50" value="10">
+            <div class="status">结果默认按 uid 倒序。</div>
+        </div>
+    </section>
+
+    <section class="panel">
+        <div class="table-wrap">
+            <table>
+                <thead>
+                <tr>
+                    <th style="width: 86px;">UID</th>
+                    <th>用户名</th>
+                    <th>昵称</th>
+                    <th style="width: 190px;">操作</th>
+                </tr>
+                </thead>
+                <tbody id="tableBody">
+                <tr>
+                    <td colspan="4" style="color: var(--muted);">暂无数据</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
+        <div class="pager">
+            <div id="pagerInfo" class="status">第 1 页 / 共 1 页（总 0 条）</div>
+            <div class="line-row">
+                <button id="prevBtn" type="button" class="btn-secondary">上一页</button>
+                <button id="nextBtn" type="button" class="btn-secondary">下一页</button>
+            </div>
+        </div>
+    </section>
+</div>
+
+<dialog id="editDialog" class="dialog-body">
+    <div class="dialog-inner">
+        <h3 class="dialog-title">编辑用户</h3>
+        <input type="hidden" id="editUid">
+        <label for="editUsername">用户名（留空表示不改）</label>
+        <input id="editUsername" placeholder="新用户名">
+        <label for="editPassword">密码（留空表示不改）</label>
+        <input id="editPassword" type="password" placeholder="新密码">
+        <label for="editNickname">昵称（可填空串清空）</label>
+        <input id="editNickname" placeholder="新昵称">
+        <div id="editStatus" class="status"></div>
+        <div class="dialog-actions">
+            <button id="closeEditBtn" type="button" class="btn-secondary">取消</button>
+            <button id="saveEditBtn" type="button">保存修改</button>
+        </div>
+    </div>
+</dialog>
+
+<script>
+    const state = {
+        pageNum: 1,
+        pageSize: 10,
+        totalPage: 1,
+        totalSize: 0,
+        keyword: ""
+    };
+
+    const baseUrlInput = document.getElementById("baseUrlInput");
+    const globalStatus = document.getElementById("globalStatus");
+    const regStatus = document.getElementById("regStatus");
+    const tableBody = document.getElementById("tableBody");
+    const pagerInfo = document.getElementById("pagerInfo");
+    const editStatus = document.getElementById("editStatus");
+    const editDialog = document.getElementById("editDialog");
+
+    const regUsername = document.getElementById("regUsername");
+    const regPassword = document.getElementById("regPassword");
+    const regNickname = document.getElementById("regNickname");
+    const keywordInput = document.getElementById("keywordInput");
+    const pageSizeInput = document.getElementById("pageSizeInput");
+    const editUid = document.getElementById("editUid");
+    const editUsername = document.getElementById("editUsername");
+    const editPassword = document.getElementById("editPassword");
+    const editNickname = document.getElementById("editNickname");
+
+    function baseUrl() {
+        return (baseUrlInput.value || "").trim();
+    }
+
+    function setStatus(el, text, type) {
+        el.textContent = text || "";
+        el.className = "status" + (type ? " " + type : "");
+    }
+
+    function api(path) {
+        const root = baseUrl();
+        return root ? root + path : path;
+    }
+
+    async function callApi(path, options = {}) {
+        const headers = Object.assign({}, options.headers || {});
+        if (options.body && !headers["Content-Type"]) {
+            headers["Content-Type"] = "application/json";
+        }
+        const response = await fetch(api(path), Object.assign({}, options, {headers}));
+        const payload = await response.json();
+        return payload;
+    }
+
+    function renderRows(items) {
+        if (!items || items.length === 0) {
+            tableBody.innerHTML = "<tr><td colspan='4' style='color: var(--muted);'>暂无数据</td></tr>";
+            return;
+        }
+
+        tableBody.innerHTML = items.map(item => {
+            const uid = item.uid == null ? "" : item.uid;
+            const username = escapeHtml(item.username || "");
+            const nickName = escapeHtml(item.nickName || "");
+            return "<tr>"
+                + "<td>" + uid + "</td>"
+                + "<td>" + username + "</td>"
+                + "<td>" + nickName + "</td>"
+                + "<td>"
+                + "<div class='actions'>"
+                + "<button type='button' class='btn-link' data-act='edit' data-uid='" + uid + "'>编辑</button>"
+                + "<button type='button' class='btn-link btn-danger' data-act='del' data-uid='" + uid + "'>删除</button>"
+                + "</div>"
+                + "</td>"
+                + "</tr>";
+        }).join("");
+    }
+
+    function updatePager() {
+        pagerInfo.textContent = "第 " + state.pageNum + " 页 / 共 " + state.totalPage + " 页（总 " + state.totalSize + " 条）";
+        document.getElementById("prevBtn").disabled = state.pageNum <= 1;
+        document.getElementById("nextBtn").disabled = state.pageNum >= state.totalPage;
+    }
+
+    async function loadUsers(pageNum = 1) {
+        state.pageNum = pageNum;
+        state.pageSize = Math.max(1, Math.min(50, Number(pageSizeInput.value || "10")));
+        state.keyword = (keywordInput.value || "").trim();
+
+        const query = new URLSearchParams();
+        query.set("pageNum", String(state.pageNum));
+        query.set("pageSize", String(state.pageSize));
+        if (state.keyword) {
+            query.set("keyword", state.keyword);
+        }
+
+        try {
+            const res = await callApi("/user/manage/page?" + query.toString(), {method: "GET"});
+            if (res.code !== 200) {
+                setStatus(globalStatus, "查询失败: " + (res.message || res.code), "err");
+                return;
+            }
+
+            const pageInfo = res.data && res.data.pageInfo ? res.data.pageInfo : {};
+            state.totalPage = Number(pageInfo.totalPage || 1);
+            state.totalSize = Number(pageInfo.totalSize || 0);
+            renderRows(pageInfo.pageData || []);
+            updatePager();
+            setStatus(globalStatus, "查询成功", "ok");
+        } catch (e) {
+            setStatus(globalStatus, "查询失败: " + e.message, "err");
+        }
+    }
+
+    async function checkName() {
+        const username = (regUsername.value || "").trim();
+        if (!username) {
+            setStatus(regStatus, "请先输入用户名", "err");
+            return;
+        }
+        try {
+            const res = await callApi("/user/manage/checkUserName?username=" + encodeURIComponent(username), {
+                method: "POST"
+            });
+            if (res.code === 200) {
+                setStatus(regStatus, "用户名可用", "ok");
+                return;
+            }
+            setStatus(regStatus, "用户名不可用: " + (res.message || res.code), "err");
+        } catch (e) {
+            setStatus(regStatus, "检查失败: " + e.message, "err");
+        }
+    }
+
+    async function registerUser() {
+        const username = (regUsername.value || "").trim();
+        const userPwd = (regPassword.value || "").trim();
+        const nickName = (regNickname.value || "").trim();
+
+        if (!username || !userPwd) {
+            setStatus(regStatus, "用户名和密码不能为空", "err");
+            return;
+        }
+
+        try {
+            const res = await callApi("/user/manage/register", {
+                method: "POST",
+                body: JSON.stringify({username, userPwd, nickName})
+            });
+            if (res.code === 200) {
+                setStatus(regStatus, "新增用户成功", "ok");
+                regPassword.value = "";
+                await loadUsers(1);
+                return;
+            }
+            setStatus(regStatus, "新增失败: " + (res.message || res.code), "err");
+        } catch (e) {
+            setStatus(regStatus, "新增失败: " + e.message, "err");
+        }
+    }
+
+    function openEdit(uid, username, nickName) {
+        editUid.value = uid;
+        editUsername.value = username || "";
+        editPassword.value = "";
+        editNickname.value = nickName || "";
+        setStatus(editStatus, "");
+        editDialog.showModal();
+    }
+
+    async function openEditByUid(uid) {
+        if (!uid) {
+            setStatus(globalStatus, "无效用户 ID", "err");
+            return;
+        }
+        try {
+            const res = await callApi("/user/manage/" + uid, {method: "GET"});
+            if (res.code !== 200 || !res.data || !res.data.user) {
+                setStatus(globalStatus, "读取用户详情失败: " + (res.message || res.code), "err");
+                return;
+            }
+            const user = res.data.user;
+            openEdit(uid, user.username || "", user.nickName || "");
+        } catch (e) {
+            setStatus(globalStatus, "读取用户详情失败: " + e.message, "err");
+        }
+    }
+
+    async function saveEdit() {
+        const uid = Number(editUid.value);
+        if (!uid) {
+            setStatus(editStatus, "无效用户 ID", "err");
+            return;
+        }
+
+        const payload = {};
+        const username = (editUsername.value || "").trim();
+        const userPwd = (editPassword.value || "").trim();
+
+        if (username) {
+            payload.username = username;
+        }
+        if (userPwd) {
+            payload.userPwd = userPwd;
+        }
+        payload.nickName = editNickname.value == null ? "" : String(editNickname.value);
+
+        try {
+            const res = await callApi("/user/manage/" + uid, {
+                method: "PUT",
+                body: JSON.stringify(payload)
+            });
+            if (res.code === 200) {
+                setStatus(editStatus, "更新成功", "ok");
+                await loadUsers(state.pageNum);
+                setTimeout(() => editDialog.close(), 280);
+                return;
+            }
+            setStatus(editStatus, "更新失败: " + (res.message || res.code), "err");
+        } catch (e) {
+            setStatus(editStatus, "更新失败: " + e.message, "err");
+        }
+    }
+
+    async function removeUser(uid) {
+        if (!confirm("确认删除用户 UID=" + uid + " ?")) {
+            return;
+        }
+        try {
+            const res = await callApi("/user/manage/" + uid, {method: "DELETE"});
+            if (res.code === 200) {
+                setStatus(globalStatus, "删除成功", "ok");
+                await loadUsers(state.pageNum);
+                return;
+            }
+            setStatus(globalStatus, "删除失败: " + (res.message || res.code), "err");
+        } catch (e) {
+            setStatus(globalStatus, "删除失败: " + e.message, "err");
+        }
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replace(/&/g, "&amp;")
+            .replace(/</g, "&lt;")
+            .replace(/>/g, "&gt;")
+            .replace(/"/g, "&quot;")
+            .replace(/'/g, "&#39;");
+    }
+
+    document.getElementById("reloadBtn").addEventListener("click", () => loadUsers(1));
+    document.getElementById("checkNameBtn").addEventListener("click", checkName);
+    document.getElementById("registerBtn").addEventListener("click", registerUser);
+    document.getElementById("searchBtn").addEventListener("click", () => loadUsers(1));
+    document.getElementById("resetBtn").addEventListener("click", () => {
+        keywordInput.value = "";
+        pageSizeInput.value = "10";
+        loadUsers(1);
+    });
+    document.getElementById("prevBtn").addEventListener("click", () => {
+        if (state.pageNum > 1) {
+            loadUsers(state.pageNum - 1);
+        }
+    });
+    document.getElementById("nextBtn").addEventListener("click", () => {
+        if (state.pageNum < state.totalPage) {
+            loadUsers(state.pageNum + 1);
+        }
+    });
+    document.getElementById("closeEditBtn").addEventListener("click", () => editDialog.close());
+    document.getElementById("saveEditBtn").addEventListener("click", saveEdit);
+
+    tableBody.addEventListener("click", (event) => {
+        const target = event.target;
+        if (!target || !target.dataset) {
+            return;
+        }
+        if (target.dataset.act === "edit") {
+            openEditByUid(Number(target.dataset.uid));
+        } else if (target.dataset.act === "del") {
+            removeUser(Number(target.dataset.uid));
+        }
+    });
+
+    (function init() {
+        updatePager();
+        loadUsers(1);
+    })();
+</script>
+</body>
+</html>

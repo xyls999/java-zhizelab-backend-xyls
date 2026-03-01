@@ -15,6 +15,12 @@ import org.springframework.context.annotation.Bean;
 public class Main {
 
     public static void main(String[] args) {
+        // Force datasource to MySQL to avoid stale external overrides (e.g. H2 driver).
+        System.setProperty("spring.datasource.url", "jdbc:mysql://localhost:3306/sm_db?useSSL=false&allowPublicKeyRetrieval=true&serverTimezone=Asia/Shanghai&characterEncoding=utf8");
+        System.setProperty("spring.datasource.username", "root");
+        System.setProperty("spring.datasource.password", "lhy145632789");
+        System.setProperty("spring.datasource.driver-class-name", "com.mysql.cj.jdbc.Driver");
+        System.setProperty("spring.datasource.type", "com.alibaba.druid.pool.DruidDataSource");
         SpringApplication.run(Main.class,args);
     }
 

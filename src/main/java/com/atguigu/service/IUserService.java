@@ -13,4 +13,12 @@ public interface IUserService extends IService<User> {
     Result checkUserName(String username);
 
     Result regist(User user);
+
+    Result managePage(Integer pageNum, Integer pageSize, String keyword);
+
+    Result manageDetail(Integer uid);
+
+    Result manageUpdate(Integer uid, User user);
+
+    Result manageDelete(Integer uid);
 }

@@ -14,14 +14,15 @@
 ```
 
 - 鉴权方式：请求头 `token: <JWT>`
+- 管理页面：`GET /admin/user-manage.html`
 - 需要登录的接口：
   - `/post/publish`
   - `/post/my`
   - `/post/{postId}/like`
   - `/post/{postId}/unlike`
   - `/post/{postId}/reply`
-  - `/llm/status`
-  - `/llm/chat`
+  - `/user/getUserInfo`
+  - `/user/checkLogin`
 
 ## 2. 状态码
 
@@ -33,8 +34,6 @@
 - `506` 参数错误
 - `507` 操作失败
 - `508` 数据不存在
-- `509` 大模型配置缺失
-- `510` 大模型调用失败
 
 ## 3. 用户模块 `user`
 
@@ -75,15 +74,30 @@
 }
 ```
 
-### 3.3 检查用户名是否可注册
+### 3.3 校验登录状态
 
-- 方法：`POST /user/checkUserName?username=test1`
+- 方法：`GET /user/checkLogin`
+- Header：`token`
+- 已登录：`code=200`
+- 未登录/过期：`code=504`
+
+### 3.4 管理页面地址
+
+- 方法：`GET /admin/user-manage.html`
+- 说明：
+  - 这是后端静态页面，打开后可执行用户分页、添加、编辑、删除。
+  - “注册用户”仅在该管理页面通过 `/user/manage/register` 执行。
+  - 管理相关接口无需 token，可直接调用。
+
+### 3.5 用户管理内检查用户名（无需登录）
+
+- 方法：`POST /user/manage/checkUserName?username=test1`
 - 成功：`code=200`
 - 已占用：`code=505`
 
-### 3.4 注册
+### 3.6 用户管理内新增用户（注册，无需登录）
 
-- 方法：`POST /user/regist`
+- 方法：`POST /user/manage/register`
 - Body(JSON)：
 
 ```json
@@ -94,12 +108,68 @@
 }
 ```
 
-### 3.5 校验登录状态
+### 3.7 用户管理分页（无需登录）
 
-- 方法：`GET /user/checkLogin`
-- Header：`token`
-- 已登录：`code=200`
-- 未登录/过期：`code=504`
+- 方法：`GET /user/manage/page?pageNum=1&pageSize=10&keyword=test`
+- 说明：`keyword` 可选，按 `username/nickName` 模糊查询
+- 成功返回 `data.pageInfo`：
+
+```json
+{
+  "pageData": [
+    {
+      "uid": 1,
+      "username": "test1",
+      "userPwd": "",
+      "nickName": "测试用户"
+    }
+  ],
+  "pageNum": 1,
+  "pageSize": 10,
+  "totalPage": 1,
+  "totalSize": 1
+}
+```
+
+### 3.8 用户管理详情（无需登录）
+
+- 方法：`GET /user/manage/{uid}`
+- 成功返回 `data`：
+
+```json
+{
+  "user": {
+    "uid": 1,
+    "username": "test1",
+    "userPwd": "",
+    "nickName": "测试用户"
+  }
+}
+```
+
+### 3.9 用户管理更新（无需登录）
+
+- 方法：`PUT /user/manage/{uid}`
+- Body(JSON，三个字段都可选，但至少传一个)：
+
+```json
+{
+  "username": "test1_new",
+  "userPwd": "123456",
+  "nickName": "新昵称"
+}
+```
+
+- 说明：
+  - `username` 若与其他用户重复会返回 `code=505`
+  - `userPwd` 入库前会做 MD5 加密
+  - 返回里 `userPwd` 固定为空串
+
+### 3.10 用户管理删除（无需登录）
+
+- 方法：`DELETE /user/manage/{uid}`
+- 成功：`code=200`
+- 用户不存在：`code=508`
 
 ## 4. 动态模块 `post`
 
@@ -231,53 +301,16 @@
 }
 ```
 
-## 5. 大模型模块 `llm`
-
-> 当前代码里 `llm` 接口同样受登录拦截，必须带 `token`。
-
-### 5.1 大模型配置状态
-
-- 方法：`GET /llm/status`
-- Header：`token`
-- 成功返回 `data`：
-
-```json
-{
-  "enabled": true,
-  "baseUrl": "https://api.openai.com/v1/chat/completions",
-  "model": "gpt-4o-mini",
-  "apiKeyMasked": "sk-1****abcd"
-}
-```
-
-### 5.2 大模型对话
-
-- 方法：`POST /llm/chat`
-- Header：`token`
-- Body(JSON)：
-
-```json
-{
-  "prompt": "给我一段Java快速排序"
-}
-```
-
-- 成功返回 `data`：
-
-```json
-{
-  "answer": "...模型回复...",
-  "model": "gpt-4o-mini"
-}
-```
-
-## 6. 示例 cURL
+## 5. 示例 cURL
 
 ```bash
 # 登录
 curl -X POST http://127.0.0.1:8080/user/login \
   -H "Content-Type: application/json" \
   -d "{\"username\":\"test1\",\"userPwd\":\"123456\"}"
+
+# 浏览器打开管理页面
+# http://127.0.0.1:8080/admin/user-manage.html
 
 # 发布动态（文字+代码）
 curl -X POST http://127.0.0.1:8080/post/publish \
@@ -298,9 +331,19 @@ curl -X POST http://127.0.0.1:8080/post/1001/reply \
   -H "Content-Type: application/json" \
   -d "{\"content\":\"支持一下\"}"
 
-# 大模型调用
-curl -X POST http://127.0.0.1:8080/llm/chat \
-  -H "token: YOUR_TOKEN" \
+# 用户管理分页
+curl "http://127.0.0.1:8080/user/manage/page?pageNum=1&pageSize=10"
+
+# 用户管理更新
+curl -X PUT http://127.0.0.1:8080/user/manage/1 \
   -H "Content-Type: application/json" \
-  -d "{\"prompt\":\"写一个Spring Boot Controller示例\"}"
+  -d "{\"nickName\":\"新的昵称\"}"
+
+# 用户管理内检查用户名
+curl -X POST "http://127.0.0.1:8080/user/manage/checkUserName?username=test2"
+
+# 用户管理内新增用户（注册）
+curl -X POST http://127.0.0.1:8080/user/manage/register \
+  -H "Content-Type: application/json" \
+  -d "{\"username\":\"test2\",\"userPwd\":\"123456\",\"nickName\":\"新用户\"}"
 ```
