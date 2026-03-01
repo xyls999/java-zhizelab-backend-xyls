@@ -22,7 +22,10 @@ public class LoginProtectInterceptor implements HandlerInterceptor {
     @Override
     public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
 
-        String token = request.getHeader("token");
+        String token = jwtHelper.resolveToken(
+                request.getHeader("token"),
+                request.getHeader("Authorization")
+        );
 
         if (StringUtils.isBlank(token) || jwtHelper.isExpiration(token)) {
 

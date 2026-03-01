@@ -13,7 +13,7 @@
 }
 ```
 
-- 鉴权方式：请求头 `token: <JWT>`
+- 鉴权方式：请求头 `token: <JWT>`（同时兼容 `Authorization: Bearer <JWT>`）
 - 管理页面：`GET /admin/user-manage.html`
 - 需要登录的接口：
   - `/post/publish`
@@ -186,6 +186,9 @@
   - `codeContent`：代码文本（可空）
   - `codeFile`：代码文件（可空，<=1MB，UTF-8）
 - 约束：`textContent/imageUrl(imageFile)/codeContent(codeFile)` 至少提供一个。
+- 图片访问：
+  - 默认返回 `imageUrl=/uploads/...`
+  - 同时兼容前端代理路径 `/api/uploads/...`
 - 成功返回 `data`：
 
 ```json

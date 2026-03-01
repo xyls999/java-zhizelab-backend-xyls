@@ -27,10 +27,11 @@ public class JwtHelper {
 
     // 从token获取userId
     public Long getUserId(String token) {
-        if (StringUtils.isBlank(token)) return null;
+        String realToken = normalizeToken(token);
+        if (StringUtils.isBlank(realToken)) return null;
         Claims claims = Jwts.parser()
                 .setSigningKey(tokenSignKey)
-                .parseClaimsJws(token)
+                .parseClaimsJws(realToken)
                 .getBody();
 
         Object uidObj = claims.get("userId");
@@ -41,16 +42,40 @@ public class JwtHelper {
 
     // 判断token是否过期：true=过期/无效，false=未过期
     public boolean isExpiration(String token) {
+        String realToken = normalizeToken(token);
+        if (StringUtils.isBlank(realToken)) {
+            return true;
+        }
         try {
             Date exp = Jwts.parser()
                     .setSigningKey(tokenSignKey)
-                    .parseClaimsJws(token)
+                    .parseClaimsJws(realToken)
                     .getBody()
                     .getExpiration();
             return exp.before(new Date());
         } catch (Exception e) {
             return true; // 解析失败也当成无效/过期
         }
+    }
+
+    public String resolveToken(String tokenHeader, String authorizationHeader) {
+        String token = normalizeToken(tokenHeader);
+        if (StringUtils.isNotBlank(token)) {
+            return token;
+        }
+        return normalizeToken(authorizationHeader);
+    }
+
+    private String normalizeToken(String rawToken) {
+        if (StringUtils.isBlank(rawToken)) {
+            return null;
+        }
+        String token = rawToken.trim();
+        String bearer = "Bearer ";
+        if (token.regionMatches(true, 0, bearer, 0, bearer.length())) {
+            token = token.substring(bearer.length()).trim();
+        }
+        return StringUtils.isBlank(token) ? null : token;
     }
 
     public long getTokenExpiration() {

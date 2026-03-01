@@ -28,8 +28,9 @@ public class UserController {
 
     // 2) 根据 token 获取用户：/user/getUserInfo
     @GetMapping("getUserInfo")
-    public Result userInfo(@RequestHeader String token) {
-        return userService.getUserInfo(token);
+    public Result userInfo(@RequestHeader(value = "token", required = false) String token,
+                           @RequestHeader(value = "Authorization", required = false) String authorization) {
+        return userService.getUserInfo(jwtHelper.resolveToken(token, authorization));
     }
 
     // 3) 用户管理内用户名检查（需登录）：/user/manage/checkUserName（param）
@@ -46,8 +47,10 @@ public class UserController {
 
     // 5) 登录校验：/user/checkLogin
     @GetMapping("checkLogin")
-    public Result checkLogin(@RequestHeader(required = false) String token) {
-        if (StringUtils.isBlank(token) || jwtHelper.isExpiration(token)) {
+    public Result checkLogin(@RequestHeader(value = "token", required = false) String token,
+                             @RequestHeader(value = "Authorization", required = false) String authorization) {
+        String realToken = jwtHelper.resolveToken(token, authorization);
+        if (StringUtils.isBlank(realToken) || jwtHelper.isExpiration(realToken)) {
             return Result.build(null, ResultCodeEnum.NOTLOGIN);
         }
         return Result.ok(null);

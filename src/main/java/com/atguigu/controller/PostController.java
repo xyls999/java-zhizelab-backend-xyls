@@ -31,54 +31,73 @@ public class PostController {
     private JwtHelper jwtHelper;
 
     @PostMapping(value = "publish", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
-    public Result publish(@ModelAttribute PostPublishRequest request, @RequestHeader String token) {
-        return postService.publish(requireUserId(token), request);
+    public Result publish(@ModelAttribute PostPublishRequest request,
+                          @RequestHeader(value = "token", required = false) String token,
+                          @RequestHeader(value = "Authorization", required = false) String authorization) {
+        return postService.publish(requireUserId(token, authorization), request);
     }
 
     @GetMapping("public")
     public Result publicPage(@RequestParam(defaultValue = "1") Integer pageNum,
                              @RequestParam(defaultValue = "10") Integer pageSize,
-                             @RequestHeader(required = false) String token) {
-        return postService.publicPage(optionalUserId(token), pageNum, pageSize);
+                             @RequestHeader(value = "token", required = false) String token,
+                             @RequestHeader(value = "Authorization", required = false) String authorization) {
+        return postService.publicPage(optionalUserId(token, authorization), pageNum, pageSize);
     }
 
     @GetMapping("my")
     public Result myPage(@RequestParam(defaultValue = "1") Integer pageNum,
                          @RequestParam(defaultValue = "10") Integer pageSize,
-                         @RequestHeader String token) {
-        return postService.myPage(requireUserId(token), pageNum, pageSize);
+                         @RequestHeader(value = "token", required = false) String token,
+                         @RequestHeader(value = "Authorization", required = false) String authorization) {
+        return postService.myPage(requireUserId(token, authorization), pageNum, pageSize);
     }
 
     @GetMapping("{postId}")
-    public Result postDetail(@PathVariable Long postId, @RequestHeader(required = false) String token) {
-        return postService.postDetail(postId, optionalUserId(token));
+    public Result postDetail(@PathVariable Long postId,
+                             @RequestHeader(value = "token", required = false) String token,
+                             @RequestHeader(value = "Authorization", required = false) String authorization) {
+        return postService.postDetail(postId, optionalUserId(token, authorization));
     }
 
     @PostMapping("{postId}/like")
-    public Result like(@PathVariable Long postId, @RequestHeader String token) {
-        return postService.like(postId, requireUserId(token));
+    public Result like(@PathVariable Long postId,
+                       @RequestHeader(value = "token", required = false) String token,
+                       @RequestHeader(value = "Authorization", required = false) String authorization) {
+        return postService.like(postId, requireUserId(token, authorization));
     }
 
     @PostMapping("{postId}/unlike")
-    public Result unlike(@PathVariable Long postId, @RequestHeader String token) {
-        return postService.unlike(postId, requireUserId(token));
+    public Result unlike(@PathVariable Long postId,
+                         @RequestHeader(value = "token", required = false) String token,
+                         @RequestHeader(value = "Authorization", required = false) String authorization) {
+        return postService.unlike(postId, requireUserId(token, authorization));
     }
 
     @PostMapping("{postId}/reply")
-    public Result reply(@PathVariable Long postId, @RequestBody PostReplyRequest request, @RequestHeader String token) {
-        return postService.reply(postId, requireUserId(token), request == null ? null : request.getContent());
+    public Result reply(@PathVariable Long postId,
+                        @RequestBody PostReplyRequest request,
+                        @RequestHeader(value = "token", required = false) String token,
+                        @RequestHeader(value = "Authorization", required = false) String authorization) {
+        return postService.reply(postId, requireUserId(token, authorization), request == null ? null : request.getContent());
     }
 
-    private Integer requireUserId(String token) {
-        Long userId = jwtHelper.getUserId(token);
-        return userId == null ? null : userId.intValue();
-    }
-
-    private Integer optionalUserId(String token) {
-        if (!StringUtils.hasText(token) || jwtHelper.isExpiration(token)) {
+    private Integer requireUserId(String token, String authorization) {
+        String realToken = jwtHelper.resolveToken(token, authorization);
+        if (!StringUtils.hasText(realToken) || jwtHelper.isExpiration(realToken)) {
             return null;
         }
-        Long userId = jwtHelper.getUserId(token);
+        Long userId = jwtHelper.getUserId(realToken);
         return userId == null ? null : userId.intValue();
     }
+
+    private Integer optionalUserId(String token, String authorization) {
+        String realToken = jwtHelper.resolveToken(token, authorization);
+        if (!StringUtils.hasText(realToken) || jwtHelper.isExpiration(realToken)) {
+            return null;
+        }
+        Long userId = jwtHelper.getUserId(realToken);
+        return userId == null ? null : userId.intValue();
+    }
+
 }
