@@ -52,7 +52,6 @@ public class PostServiceImpl extends ServiceImpl<PostMapper, Post> implements IP
 
     @Autowired
     private PostMapper postMapper;
-
     @Autowired
     private PostLikeMapper postLikeMapper;
 
